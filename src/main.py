@@ -46,3 +46,6 @@ n = RNNNumpy.RNNNumpy(r.vocabularySize)
 # print(n.V)
 # print(n.W)
 print([r.indexToChar[i] for i in n.predict(r.xTrain()[0])])
+
+print("expected loss for random predictions: "+ str(np.log(r.vocabularySize)))
+print("actual loss: "+ str(n.calculateLoss(r.xTrain()[:1000], r.yTrain()[:1000])))

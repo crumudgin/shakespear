@@ -9,7 +9,7 @@ class RNNNumpy:
         self.V = np.random.uniform(-np.sqrt(1.0/hiddenDim), np.sqrt(1.0/hiddenDim), (wordDim, hiddenDim))
         self.W = np.random.uniform(-np.sqrt(1.0/hiddenDim), np.sqrt(1.0/hiddenDim), (hiddenDim, hiddenDim))
 
-    def forward_propagation(self, x):
+    def forwardPropagation(self, x):
         # The total number of time steps
         T = len(x)
         # During forward propagation we save all hidden states in s because need them later.
@@ -23,7 +23,7 @@ class RNNNumpy:
             # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
             s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
             dot = self.V.dot(s[t])
-            print(self.V.dot(s[t]))
+            # print(self.V.dot(s[t]))
             o[t] = np.exp(dot - np.max(dot))
         return [o, s]
 
@@ -34,6 +34,17 @@ class RNNNumpy:
 
     def predict(self, x):
         # Perform forward propagation and return index of the highest score
-        o, s = self.forward_propagation(x)
+        o, s = self.forwardPropagation(x)
         return np.argmax(o, axis=1)
 
+    def calculateTotalLoss(self, x, y):
+        L = 0
+        for i in np.arange(len(y)):
+            o, s = self.forwardPropagation(x[i])
+            correctWordPredictions = o[np.arange(len(y[i])), y[i]]
+            L += -1 * np.sum(np.log(correctWordPredictions))
+        return L
+
+    def calculateLoss(self, x, y):
+        N = np.sum((len(y_i) for y_i in y))
+        return self.calculateTotalLoss(x,y)/N
