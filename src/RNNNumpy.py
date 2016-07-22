@@ -1,5 +1,7 @@
 import numpy as np
 import operator
+
+
 class RNNNumpy:
 
     def __init__(self, wordDim, hiddenDim=100, bpttTruncate=4):
@@ -17,7 +19,6 @@ class RNNNumpy:
         # During forward propagation we save all hidden states in s because need them later.
         # We add one additional element for the initial hidden, which we set to 0
         s = np.zeros((T + 1, self.hiddenDim))
-        s[-1] = np.zeros(self.hiddenDim)
         # The outputs at each time step. Again, we save them for later.
         o = np.zeros((T, self.wordDim))
         # For each time step...
@@ -26,6 +27,8 @@ class RNNNumpy:
             # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
             s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
             dot = self.V.dot(s[t])
+            print(dot)
+            print("-------------------------")
             # print(self.V.dot(s[t]))
             o[t] = self.softmax(dot)
         return [o, s]

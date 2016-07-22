@@ -1,7 +1,9 @@
 import numpy as np
 from src import RNNNumpy
+from src import RNNTheano
 import theano
 import theano.tensor
+
 
 
 
@@ -35,8 +37,8 @@ class RNN:
         # print(self.sentences)
 
     def xTrain(self):
-        # print(np.asarray([[w for w in sent[:-1]] for sent in self.sentences]))
-        return np.asarray([[self.vocabulary[w] for w in sent[:-1]] for sent in self.sentences])
+        x = np.asarray([[np.int32(self.vocabulary[w]) for w in sent[:-1]] for sent in self.sentences])
+        return x
 
     def yTrain(self):
         return np.asarray([[self.vocabulary[w] for w in sent[1:]] for sent in self.sentences])
@@ -89,25 +91,10 @@ class RNN:
 
 r = RNN()
 r.tokenizeSource('output.txt')
-# print(r.vocabularySize)
-# print(r.charToIndex)
-# # print(r.vocabulary.values().)
-# print(r.xTrain())
-# print(r.yTrain())
 n = RNNNumpy.RNNNumpy(r.vocabularySize)
 
-# # print(n.U)
-# # print(n.V)
-# # print(n.W)
-# # print([r.indexToChar[i] for i in n.predict(r.xTrain()[0])])
-# #
-# # print("expected loss for random predictions: "+ str(np.log(r.vocabularySize)))
-# # print("actual loss: "+ str(n.calculateLoss(r.xTrain()[:1000], r.yTrain()[:1000])))
-#
-# r.xTrain()
-print(r.indexToChar[0])
-# print(r.xTrain()[13396])
-print(r.generate(n))
-r.train(n, r.xTrain(), r.yTrain(), .005, nepoch=210)
-print(r.generate(n))
+T = RNNTheano.RNNTheano(r.vocabularySize)
+# T.forwardProp(r.xTrain()[100])
+
+# print(r.generate(n))
 
