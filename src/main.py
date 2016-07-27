@@ -92,8 +92,9 @@ class RNN:
 r = RNN()
 r.tokenizeSource('output.txt')
 n = RNNNumpy.RNNNumpy(r.vocabularySize)
-# print(n.forwardPropagation(r.xTrain()))
-
+n.forwardPropagation(r.xTrain()[100])
+print("--------------------------------------")
+#
 T = RNNTheano.RNNTheano(r.vocabularySize)
 T.forwardProp(r.xTrain()[100])
 

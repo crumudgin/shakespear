@@ -21,31 +21,56 @@ class RNNTheano:
     def forwardProp(self, x):
         # python variables
         xLength = len(x)
-        s = np.zeros((xLength + 1, self.hiddenDim))
+        s = theano.shared(np.zeros((xLength + 1, self.hiddenDim)))
+        o = np.zeros((xLength, self.wordDim))
 
         #theano variables
         K = T.iscalar("K")
         X = T.ivector("X")
-        S = T.dmatrix("S")
-        SS = T.dmatrix("SS")
+        SU = T.dmatrix("SU")
+        SW = T.dmatrix("SW")
+        SV = T.dmatrix("SV")
         A = T.dvector("A")
 
         #theano functions
-        def forward(X, K, S, SS):
-            return np.tanh(S[X[K]] + SS.dot(S)) #this seems wrong, but whatever
-            # return SS.dot(S)
-        result, updates = theano.scan(fn=forward,
-                                      sequences=[],
-                                      non_sequences=[X,K,S, SS],
-                                      n_steps=K)
-        final_result = result[-1]
+        def forwardS(prior_result, X, K, SU, SW):
+            S = T.tanh(SU[:, X[K]] + T.dot(SW, prior_result))
+            return S
 
-        power = theano.function(inputs=[X, K, S, SS], outputs=final_result)
+        def forwardO(A, SV):
+            dot = SV.dot(A)
+            oSum = np.exp(dot - T.max(dot))
+            o = oSum/T.sum(oSum)
+            return o
 
-        print(power(x, xLength-1, self.U, self.W))
-        # for i in range(final_result):
-        #     s[i] = final_result[i]
 
-    def softmax(self,x):
-        xt = np.exp(x - np.max(x))
-        return xt / np.sum(xt)
+
+        sResult, sUpdates = theano.scan(fn=forwardS,
+                                        outputs_info=T.ones_like(s[K-1]),
+                                        sequences=[],
+                                        non_sequences=[X, K, SU, SW],
+                                        n_steps=K)
+
+        oResult, oUpdates = theano.scan(fn=forwardO,
+                                        non_sequences=[A, SV],
+                                        n_steps=K)
+        finalS = sResult[-1]
+
+        finalO = oResult[-1]
+
+        calcS = theano.function(inputs=[X, K, SU, SW], outputs=finalS)
+
+        calcO = theano.function(inputs=[A, K, SV], outputs=finalO)
+
+        cS = calcS(x, xLength - 1, self.U, self.W)
+        cO = calcO(cS, xLength -1, self.V)
+        print(s.get_value().shape)
+        print(cS.shape)
+        t = np.zeros((xLength + 1, self.hiddenDim))
+        for i in np.arange(xLength):
+            t[i] = cS[i]
+            o[i] = cO[i]
+        print(t.shape)
+        print(o.shape)
+
+        # print(self.U[:, 0].shape)

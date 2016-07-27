@@ -1,25 +1,24 @@
 import numpy as np
 import operator
-
-
 class RNNNumpy:
 
     def __init__(self, wordDim, hiddenDim=100, bpttTruncate=4):
         self.wordDim = wordDim
         self.hiddenDim = hiddenDim
         self.bpttTruncate = bpttTruncate
-        self.U = np.random.uniform(-np.sqrt(1./wordDim), np.sqrt(1./wordDim), (hiddenDim,wordDim))
-        self.V = np.random.uniform(-np.sqrt(1./hiddenDim), np.sqrt(1./hiddenDim), (wordDim, hiddenDim))
-        self.W = np.random.uniform(-np.sqrt(1./hiddenDim), np.sqrt(1./hiddenDim), (hiddenDim, hiddenDim))
+        self.U = np.random.uniform(-np.sqrt(1.0/wordDim), np.sqrt(1.0/wordDim), (hiddenDim,wordDim))
+        self.V = np.random.uniform(-np.sqrt(1.0/hiddenDim), np.sqrt(1.0/hiddenDim), (wordDim, hiddenDim))
+        self.W = np.random.uniform(-np.sqrt(1.0/hiddenDim), np.sqrt(1.0/hiddenDim), (hiddenDim, hiddenDim))
 
     def forwardPropagation(self, x):
+        # print(self.U[:, 0].shape)
+        # print(self.W.shape)
         # The total number of time steps
         T = len(x)
         # print(T)
         # During forward propagation we save all hidden states in s because need them later.
         # We add one additional element for the initial hidden, which we set to 0
         s = np.zeros((T + 1, self.hiddenDim))
-        s[-1] = np.zeros(self.hiddenDim)
         # The outputs at each time step. Again, we save them for later.
         o = np.zeros((T, self.wordDim))
         # For each time step...
@@ -28,11 +27,10 @@ class RNNNumpy:
             # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
             s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
             dot = self.V.dot(s[t])
-            print(s)
-            print(dot)
-            print("-------------------------")
             # print(self.V.dot(s[t]))
             o[t] = self.softmax(dot)
+        print(s.shape)
+        print(o.shape)
         return [o, s]
 
     def softmax(self, x):
@@ -82,12 +80,3 @@ class RNNNumpy:
         self.V -= learningRate * dldV
         self.W -= learningRate * dldW
         # print("sdgCompleet")
-
-
-
-
-    # def gradientCheck(self, x, y, h=.001, errorThreshold=.01):
-    #     bpttGradients = self.bptt(x,y)
-    #     modelParameters = ['U', 'V', 'W']
-    #     for pidx, pname in enumerate(modelParameters):
-    #         parameter = operator.attregatter(pname)(self)
