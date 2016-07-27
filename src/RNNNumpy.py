@@ -8,9 +8,9 @@ class RNNNumpy:
         self.wordDim = wordDim
         self.hiddenDim = hiddenDim
         self.bpttTruncate = bpttTruncate
-        self.U = np.random.uniform(-np.sqrt(1.0/wordDim), np.sqrt(1.0/wordDim), (hiddenDim,wordDim))
-        self.V = np.random.uniform(-np.sqrt(1.0/hiddenDim), np.sqrt(1.0/hiddenDim), (wordDim, hiddenDim))
-        self.W = np.random.uniform(-np.sqrt(1.0/hiddenDim), np.sqrt(1.0/hiddenDim), (hiddenDim, hiddenDim))
+        self.U = np.random.uniform(-np.sqrt(1./wordDim), np.sqrt(1./wordDim), (hiddenDim,wordDim))
+        self.V = np.random.uniform(-np.sqrt(1./hiddenDim), np.sqrt(1./hiddenDim), (wordDim, hiddenDim))
+        self.W = np.random.uniform(-np.sqrt(1./hiddenDim), np.sqrt(1./hiddenDim), (hiddenDim, hiddenDim))
 
     def forwardPropagation(self, x):
         # The total number of time steps
@@ -19,6 +19,7 @@ class RNNNumpy:
         # During forward propagation we save all hidden states in s because need them later.
         # We add one additional element for the initial hidden, which we set to 0
         s = np.zeros((T + 1, self.hiddenDim))
+        s[-1] = np.zeros(self.hiddenDim)
         # The outputs at each time step. Again, we save them for later.
         o = np.zeros((T, self.wordDim))
         # For each time step...
@@ -27,6 +28,7 @@ class RNNNumpy:
             # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
             s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
             dot = self.V.dot(s[t])
+            print(s)
             print(dot)
             print("-------------------------")
             # print(self.V.dot(s[t]))

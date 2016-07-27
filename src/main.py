@@ -1,6 +1,6 @@
 import numpy as np
-from src import RNNNumpy
-from src import RNNTheano
+import RNNNumpy
+import RNNTheano
 import theano
 import theano.tensor
 
@@ -92,9 +92,10 @@ class RNN:
 r = RNN()
 r.tokenizeSource('output.txt')
 n = RNNNumpy.RNNNumpy(r.vocabularySize)
+# print(n.forwardPropagation(r.xTrain()))
 
 T = RNNTheano.RNNTheano(r.vocabularySize)
-# T.forwardProp(r.xTrain()[100])
+T.forwardProp(r.xTrain()[100])
 
 # print(r.generate(n))
 
