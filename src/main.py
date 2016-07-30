@@ -3,6 +3,7 @@ import RNNNumpy
 import RNNTheano
 import theano
 import theano.tensor
+import time
 
 
 
@@ -37,16 +38,25 @@ class RNN:
         # print(self.sentences)
 
     def xTrain(self):
-        x = np.asarray([[np.int32(self.vocabulary[w]) for w in sent[:-1]] for sent in self.sentences])
+        preX = np.asarray([[np.int32(self.vocabulary[w]) for w in sent[:-1]] for sent in self.sentences])
+        x = []
+        for i in preX:
+            if len(i) != 0:
+                x.append(i)
         return x
 
     def yTrain(self):
-        return np.asarray([[self.vocabulary[w] for w in sent[1:]] for sent in self.sentences])
+        preY = np.asarray([[self.vocabulary[w] for w in sent[1:]] for sent in self.sentences])
+        y = []
+        for i in preY:
+            if len(i) != 0:
+                y.append(i)
+        return y
 
-    def train(self, model, xTrain, yTrain, evaluateLossAfter, learningRate=.005, nepoch=100):
+    def train(self, model, xTrain, yTrain, evaluateLossAfter = 5, learningRate=.005, nepoch=100):
         losses = []
         numExamplesSeen = 0
-        counter = 0.0
+        counter = 0
         for epoch in range(nepoch):
             print("nextRound")
             if epoch % evaluateLossAfter == 0:
@@ -54,49 +64,47 @@ class RNN:
                 losses.append((numExamplesSeen, loss))
                 if len(losses) > 1 and losses[-1][1] > losses[-2][1]:
                     learningRate = learningRate * .5
-            print("running sdg: "+str((counter/nepoch)*10)+"%")
+            print("running sdg: "+str(counter))
             for i in range(len(yTrain)):
                 model.sdgStep(xTrain[i], yTrain[i], learningRate)
                 numExamplesSeen += 1
             counter += 1
 
+
+
     def generate(self, model):
         print("start generation")
-        newSentence = [self.vocabulary['a']]
-        counter = 0
+        newSentence = [self.vocabulary['k']]
+        counter = 1
         while not newSentence[-1] == self.vocabulary['\n']:
-            nextWordProbs = model.forwardPropagation(newSentence)
+            nextWordProbs = model.o(newSentence)
             sampledChar = -1
             # print(nextWordProbs[0])
             while sampledChar == -1 or sampledChar >=324:
-                samples = np.random.multinomial(1, nextWordProbs[0][0])
+                samples = np.random.multinomial(1, nextWordProbs[-1])
                 sampledChar = np.argmax(samples)
             newSentence.append(sampledChar)
-            # print(nextWordProbs[0])
-            max = 0
-            maxval = 0
-            # for i in range(0,len(nextWordProbs[0][0])):
-            #     if nextWordProbs[0][0][i] > maxval :
-            #         max = nextWordProbs[0][0][i]
-            #         maxval = i
-            # # samples = np.random.multinomial(1, nextWordProbs[0])
-            # # sampledWord = np.argmax(samples)
-            # newSentence.append(maxval)
             if counter%1000 == 0:
                 print([self.indexToChar[c] for c in newSentence])
             counter += 1
         print("finished gen")
-        return [self.indexToChar[x] for x in newSentence[1:]]
+        return "".join([self.indexToChar[x] for x in newSentence])
 
 
 r = RNN()
 r.tokenizeSource('output.txt')
-n = RNNNumpy.RNNNumpy(r.vocabularySize)
-n.forwardPropagation(r.xTrain()[100])
-print("--------------------------------------")
-#
 T = RNNTheano.RNNTheano(r.vocabularySize)
-T.forwardProp(r.xTrain()[100])
+# print(T.o(r.xTrain()[100]))
+# T.toFile()
+r.train(T,r.xTrain(),r.yTrain(), nepoch=1)
 
-# print(r.generate(n))
+
+T.toFile(T.U.get_value().tolist(),"U.txt")
+T.toFile(T.V.get_value().tolist(),"V.txt")
+T.toFile(T.W.get_value().tolist(),"W.txt")
+while True:
+    print(r.generate(T))
+    time.sleep(1)
+
+
 

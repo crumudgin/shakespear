@@ -22,8 +22,10 @@ class RNNNumpy:
         # The outputs at each time step. Again, we save them for later.
         o = np.zeros((T, self.wordDim))
         # For each time step...
+        print(x)
+        # print(s.shape)
         for t in np.arange(T):
-            # print(t)
+            print(t)
             # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
             s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
             dot = self.V.dot(s[t])
