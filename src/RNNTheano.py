@@ -34,10 +34,10 @@ class RNNTheano:
         SU, SV, SW = self.U, self.V, self.W
         # scan
         def forward(X, pr1, SU, SW, SV):
-            S = T.tanh(SU[:, X] + SW.dot(pr1))
+            S = T.tanh(SU[:, X] + SW.dot(pr1)) # wieght on input +wieght based on previous input
             dot = SV.dot(S)
             oSum = np.exp(dot - T.max(dot))
-            o = oSum / T.sum(oSum)
+            o = oSum / T.sum(oSum) #output
             return [S, o]
 
 
